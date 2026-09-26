@@ -3,19 +3,19 @@ import time
 import streamlit as st
 from supabase import create_client, Client
 
+# Supabase Bağlantısı
 URL = os.environ.get("SUPABASE_URL", "https://sfshteybktaruvawmmsb.supabase.co")
 KEY = os.environ.get("SUPABASE_KEY")
 
-# PWA və Mobil Ekran Tənzimləmələri
 st.set_page_config(page_title="ByteV3nom App", layout="centered", page_icon="🟢")
 
 if not KEY:
-    st.error("⚠️ SUPABASE_KEY təyin edilməyib!")
+    st.error("⚠️ SUPABASE_KEY təyin edilməyib! Render-də Environment Variables hissəsini yoxlayın.")
     st.stop()
 
 supabase: Client = create_client(URL, KEY)
 
-# Müasir Yaşıl Dark-Green UI Stili (CSS)
+# Müasir Tünd-Yaşıl (Neon Dark-Green) UI Stili
 st.markdown("""
     
 """, unsafe_allow_html=True)
@@ -30,9 +30,9 @@ def send_cmd(cmd_text):
         st.error(f"Xəta: {e}")
 
 # --- SOL MENYU (SIDEBAR) ---
-st.sidebar.title("🟢 ByteV3nom Menu")
+st.sidebar.title("🟢 ByteV3nom Menyu")
 
-# Avto-Analiz: Ən çox istifadə olunan əmrləri çəkmək
+# Avto-Analiz: Ən çox istifadə olunan əmrləri bazadan avtomatik çəkmək
 top_cmds = []
 try:
     all_data = supabase.table("commands").select("command").execute().data
@@ -42,7 +42,7 @@ try:
             c = d.get("command", "").split()[0].lower()
             counts[c] = counts.get(c, 0) + 1
         sorted_cmds = sorted(counts.items(), key=lambda x: x[1], reverse=True)
-        top_cmds = [x[0] for x in sorted_cmds[:3]]
+        top_cmds = [x[0] for x in sorted_cmds[:4]]
 except Exception:
     pass
 
@@ -67,17 +67,17 @@ with c2:
 
 st.sidebar.divider()
 st.sidebar.subheader("🔊 Səs & Parlaqlıq")
-v_val = st.sidebar.slider("Səs", 0, 100, 50)
+v_val = st.sidebar.slider("Səs (%)", 0, 100, 50)
 if st.sidebar.button("Səsi Tənzimlə"): send_cmd(f"səs {v_val}")
 
-b_val = st.sidebar.slider("Parlaqlıq", 0, 100, 80)
+b_val = st.sidebar.slider("Parlaqlıq (%)", 0, 100, 80)
 if st.sidebar.button("Parlaqlığı Tənzimlə"): send_cmd(f"parlaqlıq {b_val}")
 
 # --- ƏSAS ÇAT EKRANI (TELEGRAM STİLİ) ---
 st.title("💬 ByteV3nom Chat")
-st.caption("Əmri aşağıdan yazın və ya menyudan düyməyə basın.")
+st.caption("Əmri aşağıdan yazın və ya soldakı menyudan düymələrə basın.")
 
-# Son 8 çatı göstərmək
+# Son 8 mesajı göstərmək
 try:
     chat_res = supabase.table("commands").select("*").order("created_at", desc=True).limit(8).execute()
     chat_data = reversed(chat_res.data) if chat_res.data else []
